@@ -1,0 +1,140 @@
+<?php 
+
+if (empty($_GET['id']) || !is_numeric($_GET['id'])) {
+    header('Location: ' . PT_Link('404'));
+    exit();
+}
+
+$id       = PT_Secure($_GET['id']);
+$edit_site  = $db->where('id',$id)->getOne(T_SITE);
+
+if (empty($edit_site)) {
+    header('Location: ' . PT_Link('404'));
+    exit();
+}
+
+?>
+
+
+<div class="container-fluid">
+    <div class="email-settings-alert"></div>
+    <div>
+        <h3>Edit Your Site</h3>
+        <nav aria-label="breadcrumb">
+           <!-- some text  -->
+        </nav>
+    </div>
+    <!-- Vertical Layout -->
+    <div class="row">
+        <div class="col-lg-8 col-md-8 ">
+            <div class="card">
+                <div class="card-body">
+                    <h6 class="card-title">Input Your Details</h6>
+                    <!-- <form class="site-details"  method="POST" action="{{LINK aj/ap/create-site}}" enctype='multipart/form-data'> -->
+                    <form class="site-details"  method="POST"> 
+                        <input type="hidden" name="site" value="site">
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <label class="form-label">Site Name</label>
+                                <input type="text" name="site_name" value="<?php echo $edit_site->site_name;?>" class="form-control" required>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <label class="form-label">Site Description</label>
+                                <textarea name="description" class="form-control" required><?php echo $edit_site->description;?></textarea>
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="form-group form-float">
+                            <div class="form-line">
+                                <label class="form-label">Site Logo</label>
+                                <input type="file" name="file" class="form-control" required>
+                            </div>
+                        </div>
+                        <img src="<?php echo $pt->config->theme_url ?>/img/<?php echo $edit_site->logo;?>" alt="logo"  width="150" height="50">
+                        <hr>
+                        <div class="form-group form-float">
+                            <a class="btn btn-danger m-t-15 waves-effect sub-domain">Add Sub-domain</a>
+                            <a class="btn btn-danger m-t-15 waves-effect custom-domain">Add Custom-domain</a>
+                            <!-- <div class="form-line">
+                                <label class="form-label">SMTP Port</label>
+                                <input type="text" name="smtp_port" class="form-control" value="<?php echo ($pt->config->smtp_port);?>">
+                                <small class="admin-info">Which port does your SMTP server use? most used 587 for TLS, and 465 for SSL encryption.</small>
+                            </div> -->
+                        </div>
+                        <hr>
+                        <div class="form-group form-float sub-domains" style="display: none">
+                        <div class="form-line">
+                        <label for="smtp_encryption">Sub-domain</label>
+                        <select class="form-control show-tick" id="smtp_encryption" name="sub_domain">
+                            <option>one</option>
+                            <option >one</option>
+                          </select>
+                           
+                        </div>
+                    </div>
+                    
+                        <div class="form-group form-float custom-domains" style="display: none">
+                            <div class="form-line">
+                        <label for="smtp_encryption">Custom-Domain</label>
+                        <select class="form-control show-tick" id="smtp_encryption" name="custom_domain">
+                            <option>two</option>
+                            <option >two</option>
+                          </select>
+                        </div>
+                    </div>
+                        <br>
+                        <button type="submit" class="btn btn-warning m-t-15 waves-effect site-chk" id="site">Submit</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+        <div class="clearfix"></div>
+    </div>
+
+<script>
+$(function() {
+// Domain section start
+$('.sub-domain').click(function(){
+    $(".custom-domains").css({"display": "none",}); 
+    $(".sub-domains").css({"display": "block",}); 
+});
+
+$('.custom-domain').click(function(){
+    $(".sub-domains").css({"display": "none",}); 
+    $(".custom-domains").css({"display": "block",}); 
+});
+// Domain section end 
+
+var create_site = $('form.site-details');
+ create_site.ajaxForm({
+        url: '{{LINK aj/ap/create-site}}',
+        beforeSend: function() {
+            create_site.find('.site-chk').text('Please wait..');
+        },
+        success: function(response) {
+        console.log(response);
+        if(response.status == 200){
+                $("html, body").animate({ scrollTop: 0 }, "slow");
+                $('.email-settings-alert').html('<div class="alert alert-success"><i class="fa fa-check"></i> Site Created successfully</div>');
+                setTimeout(function () {
+                    $('.email-settings-alert').empty();
+                }, 5000);
+            $('#site').attr('disabled', 'disabled');
+            create_site.find('.site-chk').text('Save');
+            }
+            else{
+                $('.email-settings-alert').html('<div class="alert alert-danger">'+response.error+'</div>');
+            setTimeout(function () {
+                $('.email-settings-alert').empty();
+            }, 5000);
+            create_site.find('.site-chk').text('Submit');
+            }
+        }
+    });
+
+});
+
+</script>
